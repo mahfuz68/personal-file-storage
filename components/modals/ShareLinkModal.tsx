@@ -88,7 +88,7 @@ export function ShareLinkModal({
 
           <div>
             <DialogTitle
-              className="text-sm font-semibold leading-none mb-1"
+              className="text-sm font-semibold leading-none mb-1.5"
               style={{ color: 'rgba(255,255,255,0.95)' }}
             >
               Share Link Ready
