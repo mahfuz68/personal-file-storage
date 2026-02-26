@@ -8,7 +8,7 @@ import { useAuthRedirect } from '@/lib/auth-utils'
 export default function Home() {
   const router = useRouter()
   const { isLoaded: authLoaded, isSignedIn } = useAuth()
-  const { signIn, isLoaded: signInLoaded } = useSignIn()
+  const { signIn, isLoaded: signInLoaded, setActive } = useSignIn()
 
   const [email, setEmail]       = useState('')
   const [password, setPassword] = useState('')
@@ -17,8 +17,13 @@ export default function Home() {
   const [error, setError]       = useState('')
   const emailRef = useRef<HTMLInputElement>(null)
 
-  // Use the auth redirect hook to handle signed-in redirects
-  useAuthRedirect('/storage')
+  useEffect(() => {
+    if (authLoaded && isSignedIn) {
+      const params = new URLSearchParams(window.location.search)
+      const redirectUrl = params.get('redirect_url') || '/storage'
+      router.push(redirectUrl)
+    }
+  }, [authLoaded, isSignedIn, router])
 
   // Auto-focus email
   useEffect(() => {
@@ -44,10 +49,9 @@ export default function Home() {
       })
 
       if (result.status === 'complete') {
-        console.log('Sign-in successful for email:')
-        // Redirect immediately to ensure smooth transition
+        await setActive({ session: result.createdSessionId })
         router.push('/storage')
-        router.refresh() // Force refresh to ensure proper state
+        return
       } else if (result.status === 'needs_first_factor') {
         // Handle multi-factor authentication if enabled
         setError('Additional authentication required. Contact your administrator.')

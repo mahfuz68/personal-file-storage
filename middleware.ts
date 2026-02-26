@@ -6,13 +6,11 @@ const isProtectedRoute = createRouteMatcher([
   '/api/folders(.*)',
 ])
 
-// The key redirect after login functionality is handled in the page component
-// This middleware just protects the storage routes
 export default clerkMiddleware(async (auth, req) => {
   if (isProtectedRoute(req)) {
     await auth.protect();
   }
-})
+}, { signInUrl: '/' })
 
 export const config = {
   matcher: [
