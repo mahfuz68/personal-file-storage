@@ -2,7 +2,7 @@ import { clerkMiddleware, createRouteMatcher } from '@clerk/nextjs/server'
 
 const isProtectedRoute = createRouteMatcher([
   '/storage(.*)',
-  '/api/files(.*)',
+  '/api/files((?!/upload-cli).*)',
   '/api/folders(.*)',
 ])
 

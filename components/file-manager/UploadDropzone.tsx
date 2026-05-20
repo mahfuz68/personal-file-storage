@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useDropzone } from 'react-dropzone'
 import { cn } from '@/lib/utils'
 
@@ -11,7 +11,10 @@ interface UploadDropzoneProps {
   currentPath?: string
 }
 
-const baseUrl = process.env.NEXT_PUBLIC_URL || 'http://localhost:3000'
+interface CliConfig {
+  apiKey: string
+  baseUrl: string
+}
 
 export function UploadDropzone({ onDrop, isUploading, uploadingFileName, currentPath }: UploadDropzoneProps) {
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
@@ -19,26 +22,38 @@ export function UploadDropzone({ onDrop, isUploading, uploadingFileName, current
     noClick: isUploading,
   })
 
+  const [config, setConfig] = useState<CliConfig | null>(null)
+
+  useEffect(() => {
+    fetch('/api/files/upload-cli/config')
+      .then((res) => res.json())
+      .then(setConfig)
+      .catch(() => setConfig({ apiKey: '', baseUrl: 'http://localhost:3000' }))
+  }, [])
+
   const displayPath = currentPath || 'root'
   const pathSegments = currentPath ? currentPath.replace(/\/$/, '').split('/').filter(Boolean) : []
   const depth = pathSegments.length
+
+  const baseUrl = config?.baseUrl || 'http://localhost:3000'
+  const apiKeyHeader = config?.apiKey ? `-H "x-api-key: ${config.apiKey}" ` : ''
 
   let relevantCommand: { label: string; command: string }
 
   if (depth === 0) {
     relevantCommand = {
       label: 'Upload to root',
-      command: `curl -X POST -F "file=@myfile.txt" ${baseUrl}/api/files/upload-cli`,
+      command: `curl -X POST ${apiKeyHeader}-F "file=@myfile.txt" ${baseUrl}/api/files/upload-cli`,
     }
   } else if (depth === 1) {
     relevantCommand = {
       label: 'Upload to a specific folder',
-      command: `curl -X POST -F "file=@myfile.txt" -F "path=${currentPath}" ${baseUrl}/api/files/upload-cli`,
+      command: `curl -X POST ${apiKeyHeader}-F "file=@myfile.txt" -F "path=${currentPath}" ${baseUrl}/api/files/upload-cli`,
     }
   } else {
     relevantCommand = {
       label: 'Upload to nested folder',
-      command: `curl -X POST -F "file=@image.png" -F "path=${currentPath}" ${baseUrl}/api/files/upload-cli`,
+      command: `curl -X POST ${apiKeyHeader}-F "file=@image.png" -F "path=${currentPath}" ${baseUrl}/api/files/upload-cli`,
     }
   }
 
@@ -239,6 +254,7 @@ export function UploadDropzone({ onDrop, isUploading, uploadingFileName, current
 
       {/* CLI Commands Panel */}
       {!isUploading && !isDragActive && (
+        config ? (
         <div
           className="rounded-xl mb-6 overflow-hidden"
           style={{
@@ -344,6 +360,19 @@ export function UploadDropzone({ onDrop, isUploading, uploadingFileName, current
             </div>
           </div>
         </div>
+        ) : (
+          <div
+            className="rounded-xl mb-6 px-4 py-3 text-xs"
+            style={{
+              background: '#0D0D0D',
+              border: '1px solid rgba(42,42,42,0.6)',
+              color: 'rgba(161,161,170,0.5)',
+              fontFamily: 'var(--font-geist-mono, monospace)',
+            }}
+          >
+            Loading CLI config...
+          </div>
+        )
       )}
     </div>
   )
