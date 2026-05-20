@@ -120,6 +120,14 @@ export const createFolderSchema = z.object({
     .refine(isValidKey, { message: 'Folder name contains invalid characters' }),
 })
 
+export const cliUploadSchema = z.object({
+  filename: z
+    .string()
+    .min(1, 'Filename must not be empty')
+    .refine(isValidKey, { message: 'Filename contains invalid characters' }),
+  path: prefixSchema.optional().default(''),
+})
+
 // ---------------------------------------------------------------------------
 // Helper: parse & respond with validation error
 // ---------------------------------------------------------------------------

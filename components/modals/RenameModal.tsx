@@ -5,6 +5,7 @@ interface RenameModalProps {
   open: boolean
   onOpenChange: (open: boolean) => void
   currentName: string
+  isFolder: boolean
   onRename: (newName: string) => void
   isRenaming: boolean
 }
@@ -13,6 +14,7 @@ export function RenameModal({
   open,
   onOpenChange,
   currentName,
+  isFolder,
   onRename,
   isRenaming,
 }: RenameModalProps) {
@@ -36,7 +38,7 @@ export function RenameModal({
   }, [open])
 
   const isValid = newName.trim().length > 0 && newName.trim() !== currentName
-  const hasExtension = currentName.includes('.')
+  const hasExtension = !isFolder && currentName.includes('.')
   const ext = hasExtension ? currentName.split('.').pop() : null
 
   const handleRename = () => {
@@ -102,7 +104,7 @@ export function RenameModal({
               className="text-sm font-semibold leading-none mb-1.5"
               style={{ color: 'rgba(255,255,255,0.95)' }}
             >
-              Rename File
+              {isFolder ? 'Rename Folder' : 'Rename File'}
             </DialogTitle>
             <p
               className="text-xs leading-none"
@@ -128,7 +130,7 @@ export function RenameModal({
               borderLeft: '2px solid rgba(249,115,22,0.35)',
             }}
           >
-            {/* File icon */}
+            {/* File/folder icon */}
             <div
               className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0"
               style={{
@@ -136,21 +138,32 @@ export function RenameModal({
                 border: '1px solid rgba(249,115,22,0.18)',
               }}
             >
-              <svg width="13" height="13" viewBox="0 0 14 14" fill="none">
-                <path
-                  d="M2.5 2.5a1 1 0 0 1 1-1H8l3 3v7a1 1 0 0 1-1 1H3.5a1 1 0 0 1-1-1v-9Z"
-                  stroke="#F97316"
-                  strokeWidth="1.2"
-                  strokeLinejoin="round"
-                />
-                <path
-                  d="M8 1.5V4.5h3"
-                  stroke="#F97316"
-                  strokeWidth="1.2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
+              {isFolder ? (
+                <svg width="13" height="13" viewBox="0 0 14 14" fill="none">
+                  <path
+                    d="M1.5 3.5a1 1 0 0 1 1-1H5l1.5 2H11.5a1 1 0 0 1 1 1V11a1 1 0 0 1-1 1h-9a1 1 0 0 1-1-1v-7.5Z"
+                    stroke="#F97316"
+                    strokeWidth="1.2"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+              ) : (
+                <svg width="13" height="13" viewBox="0 0 14 14" fill="none">
+                  <path
+                    d="M2.5 2.5a1 1 0 0 1 1-1H8l3 3v7a1 1 0 0 1-1 1H3.5a1 1 0 0 1-1-1v-9Z"
+                    stroke="#F97316"
+                    strokeWidth="1.2"
+                    strokeLinejoin="round"
+                  />
+                  <path
+                    d="M8 1.5V4.5h3"
+                    stroke="#F97316"
+                    strokeWidth="1.2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+              )}
             </div>
             <div className="min-w-0 flex-1">
               <p

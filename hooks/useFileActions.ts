@@ -14,13 +14,14 @@ export function useFileActions(currentPath: string) {
       if (!response.ok) throw new Error('Failed to rename')
       return response.json()
     },
-    onSuccess: (_, { newKey }) => {
+    onSuccess: (data, { newKey }) => {
       queryClient.invalidateQueries({ queryKey: ['files', currentPath] })
-      const filename = newKey.split('/').pop()
-      toast.success(`File renamed to "${filename}" successfully`)
+      const displayName = newKey.replace(/\/$/, '').split('/').pop()
+      const typeLabel = data?.isFolder ? 'Folder' : 'File'
+      toast.success(`${typeLabel} renamed to "${displayName}" successfully`)
     },
     onError: () => {
-      toast.error('Failed to rename file')
+      toast.error('Failed to rename')
     },
   })
 
