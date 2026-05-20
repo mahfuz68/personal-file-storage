@@ -1,4 +1,4 @@
-import { Folder, ChevronRight } from 'lucide-react'
+import { Folder, ChevronRight, Pencil, Trash2 } from 'lucide-react'
 import { Checkbox } from '@/components/ui/checkbox'
 import { cn } from '@/lib/utils'
 import type { FolderItem } from '@/types'
@@ -8,6 +8,7 @@ interface FolderItemProps {
   isSelected: boolean
   onToggleSelect: () => void
   onClick: () => void
+  onAction: (action: 'rename' | 'delete') => void
 }
 
 export function FolderItem({
@@ -15,6 +16,7 @@ export function FolderItem({
   isSelected,
   onToggleSelect,
   onClick,
+  onAction,
 }: FolderItemProps) {
   return (
     <div
@@ -101,11 +103,68 @@ export function FolderItem({
         </span>
       </div>
 
-      {/* Right arrow */}
-      <div className="flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity duration-200" onClick={onClick}>
+      {/* Right arrow and action buttons */}
+      <div className="flex-shrink-0 flex items-center gap-1">
+        {/* Action buttons — appear on hover */}
+        <div
+          className={cn(
+            'flex items-center gap-1 transition-all duration-200',
+            isSelected ? 'opacity-0 pointer-events-none' : 'opacity-0 group-hover:opacity-100',
+          )}
+        >
+          <button
+            onClick={(e) => { e.stopPropagation(); onAction('rename') }}
+            title="Rename"
+            className="w-7 h-7 rounded-md flex items-center justify-center transition-all duration-150"
+            style={{
+              background: 'transparent',
+              border: '1px solid transparent',
+            }}
+            onMouseEnter={(e) => {
+              const el = e.currentTarget
+              el.style.background = 'rgba(255,255,255,0.06)'
+              el.style.borderColor = 'rgba(60,60,60,0.6)'
+            }}
+            onMouseLeave={(e) => {
+              const el = e.currentTarget
+              el.style.background = 'transparent'
+              el.style.borderColor = 'transparent'
+            }}
+          >
+            <Pencil
+              className="w-3.5 h-3.5"
+              style={{ color: 'rgba(161,161,170,0.65)' }}
+            />
+          </button>
+          <button
+            onClick={(e) => { e.stopPropagation(); onAction('delete') }}
+            title="Delete"
+            className="w-7 h-7 rounded-md flex items-center justify-center transition-all duration-150"
+            style={{
+              background: 'transparent',
+              border: '1px solid transparent',
+            }}
+            onMouseEnter={(e) => {
+              const el = e.currentTarget
+              el.style.background = 'rgba(239,68,68,0.1)'
+              el.style.borderColor = 'rgba(239,68,68,0.25)'
+            }}
+            onMouseLeave={(e) => {
+              const el = e.currentTarget
+              el.style.background = 'transparent'
+              el.style.borderColor = 'transparent'
+            }}
+          >
+            <Trash2
+              className="w-3.5 h-3.5"
+              style={{ color: 'rgba(239,68,68,0.7)' }}
+            />
+          </button>
+        </div>
         <ChevronRight
-          className="w-4 h-4"
+          className="w-4 h-4 transition-opacity duration-200"
           style={{ color: isSelected ? '#F97316' : 'rgba(113,113,122,0.5)' }}
+          onClick={onClick}
         />
       </div>
     </div>

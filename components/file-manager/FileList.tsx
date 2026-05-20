@@ -13,6 +13,7 @@ interface FileListProps {
   allSelected: boolean
   onFolderClick: (key: string) => void
   onFileAction: (action: string, key: string) => void
+  onFolderAction: (action: 'rename' | 'delete', key: string) => void
   isLoading?: boolean
 }
 
@@ -25,6 +26,7 @@ export function FileList({
   allSelected,
   onFolderClick,
   onFileAction,
+  onFolderAction,
   isLoading,
 }: FileListProps) {
   const totalItems = folders.length + files.length
@@ -124,6 +126,7 @@ export function FileList({
             isSelected={selectedKeys.includes(folder.key)}
             onToggleSelect={() => onToggleSelect(folder.key)}
             onClick={() => onFolderClick(folder.key)}
+            onAction={(action) => onFolderAction(action, folder.key)}
           />
         ))}
 

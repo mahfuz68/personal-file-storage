@@ -37,7 +37,7 @@ export function FileManagerShell({ currentPath }: FileManagerShellProps) {
   const [searchQuery, setSearchQuery] = useState('')
   const [fileTypeFilter, setFileTypeFilter] = useState('all')
   const [showNewFolder, setShowNewFolder] = useState(false)
-  const [renameFile, setRenameFile] = useState<{ key: string; name: string } | null>(null)
+  const [renameFile, setRenameFile] = useState<{ key: string; name: string; isFolder: boolean } | null>(null)
   const [deleteFiles, setDeleteFiles] = useState<string[]>([])
   const [shareFile, setShareFile] = useState<string | null>(null)
   const [shareLink, setShareLink] = useState<{ fileName: string; url: string; expiryDate: Date } | null>(null)
@@ -92,15 +92,12 @@ export function FileManagerShell({ currentPath }: FileManagerShellProps) {
   }
 
   const handleFileAction = (action: string, key: string) => {
-    // BUG FIX: Search in allFiles (unfiltered), not files (filtered list).
-    // When a search/type filter is active, the file may not appear in `files`
-    // even though it exists — causing share/rename/delete to silently bail out.
     const file = allFiles.find(f => f.key === key)
     if (!file) return
 
     switch (action) {
       case 'rename':
-        setRenameFile({ key, name: file.name })
+        setRenameFile({ key, name: file.name, isFolder: false })
         break
       case 'delete':
         setDeleteFiles([key])
@@ -114,10 +111,26 @@ export function FileManagerShell({ currentPath }: FileManagerShellProps) {
     }
   }
 
+  const handleFolderAction = (action: 'rename' | 'delete', key: string) => {
+    const folder = folders.find(f => f.key === key)
+    if (!folder) return
+
+    switch (action) {
+      case 'rename':
+        setRenameFile({ key, name: folder.name, isFolder: true })
+        break
+      case 'delete':
+        setDeleteFiles([key])
+        break
+    }
+  }
+
   const handleRename = (newName: string) => {
     if (!renameFile) return
     const pathPrefix = currentPath
-    const newKey = pathPrefix + newName
+    const newKey = renameFile.isFolder
+      ? pathPrefix + newName + '/'
+      : pathPrefix + newName
     fileActions.rename({ oldKey: renameFile.key, newKey })
     setRenameFile(null)
   }
@@ -230,6 +243,7 @@ export function FileManagerShell({ currentPath }: FileManagerShellProps) {
           onDrop={uploadFiles}
           isUploading={uploads.length > 0}
           uploadingFileName={uploads[0]?.file.name}
+          currentPath={currentPath}
         />
 
         <UploadProgress uploads={uploads} />
@@ -241,23 +255,24 @@ export function FileManagerShell({ currentPath }: FileManagerShellProps) {
             border: '1px solid rgba(42,42,42,0.65)',
           }}
         >
-          <FileList
-            folders={folders}
-            files={files}
-            selectedKeys={selection.keys}
-            onToggleSelect={selection.toggle}
-            onSelectAll={() => {
-              if (allSelected) {
-                selection.clear()
-              } else {
-                selection.selectAll([...folders.map(f => f.key), ...files.map(f => f.key)])
-              }
-            }}
-            allSelected={allSelected}
-            onFolderClick={handleFolderClick}
-            onFileAction={handleFileAction}
-            isLoading={!data}
-          />
+        <FileList
+          folders={folders}
+          files={files}
+          selectedKeys={selection.keys}
+          onToggleSelect={selection.toggle}
+          onSelectAll={() => {
+            if (allSelected) {
+              selection.clear()
+            } else {
+              selection.selectAll([...folders.map(f => f.key), ...files.map(f => f.key)])
+            }
+          }}
+          allSelected={allSelected}
+          onFolderClick={handleFolderClick}
+          onFileAction={handleFileAction}
+          onFolderAction={handleFolderAction}
+          isLoading={!data}
+        />
         </div>
       </main>
 
@@ -272,6 +287,7 @@ export function FileManagerShell({ currentPath }: FileManagerShellProps) {
         open={!!renameFile}
         onOpenChange={(open) => !open && setRenameFile(null)}
         currentName={renameFile?.name || ''}
+        isFolder={renameFile?.isFolder || false}
         onRename={handleRename}
         isRenaming={fileActions.isRenaming}
       />
