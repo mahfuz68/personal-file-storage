@@ -5,6 +5,17 @@ import { sanitizeKey } from '@/lib/validations'
 
 export async function POST(request: NextRequest) {
   try {
+    const apiKey = request.headers.get('x-api-key')
+    const expectedKey = process.env.CLI_API_KEY
+
+    if (!expectedKey) {
+      return NextResponse.json({ error: 'CLI upload not configured. Set CLI_API_KEY in .env.local' }, { status: 503 })
+    }
+
+    if (!apiKey || apiKey !== expectedKey) {
+      return NextResponse.json({ error: 'Invalid or missing API key. Use -H "x-api-key: YOUR_KEY" with curl.' }, { status: 401 })
+    }
+
     const formData = await request.formData()
     const file = formData.get('file') as File | null
     const path = (formData.get('path') as string) || ''
